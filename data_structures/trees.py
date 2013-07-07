@@ -155,48 +155,8 @@ class BinarySearchTree:
     def __iter__(self):
         return self.root.__iter__()
 
-
-class TreeNode:
-    def __init__(self, key, value, left=None, right=None, parent=None):
-        self.key = key
-        self.payload = value
-        self.left_child = left
-        self.right_child = right
-        self.parent = parent
-
-    def has_left_child(self):
-        return self.left_child
-
-    def has_right_child(self):
-        return self.right_child
-
-    def is_left_child(self):
-        return self.parent and self.parent.left_child == self
-
-    def is_right_child(self):
-        return self.parent and self.parent.right_child == self
-
-    def is_root(self):
-        return not self.parent
-
-    def is_leaf(self):
-        return not (self.left_child or self.right_child)
-
-    def has_any_children(self):
-        return self.right_child or self.left_child
-
-    def has_both_children(self):
-        return self.right_child and self.left_child
-
-    def replace_node_data(self, key, value, left_child, right_child):
-        self.key = key
-        self.payload = value
-        self.left_child = left_child
-        self.right_child = right_child
-        if self.has_right_child():
-            self.left_child.parent = self
-        if self.has_right_child():
-            self.right_child.parent = self
+    def __repr__(self):
+        return str([(key, self[key]) for key in self])
 
     def put(self, key, value):
         if self.root:
@@ -212,11 +172,13 @@ class TreeNode:
                 self._put(key, value, current_node.left_child)
             else:
                 current_node.left_child = TreeNode(key, value, parent=current_node)
-        else:
+        elif key > current_node.key:
             if current_node.has_right_child():
                 self._put(key, value, current_node.right_child)
             else:
                 current_node.right_child = TreeNode(key, value, parent=current_node)
+        else:
+            current_node.replace_node_data(key, value, current_node.left_child, current_node.right_child)
 
     def __setitem__(self, key, value):
         self.put(key, value)
@@ -267,9 +229,6 @@ class TreeNode:
         else:
             raise KeyError('Key "{}" not in tree'.format(key))
 
-    def __delitem__(self, key):
-        self.delete(key)
-
     def remove(self, node_to_remove):
         if node_to_remove.is_leaf():
             if node_to_remove == node_to_remove.parent.left_child:
@@ -311,6 +270,42 @@ class TreeNode:
                         node_to_remove.right_child.left_child.
                         node_to_remove.right_child.right_child)
 
+    def __delitem__(self, key):
+        self.delete(key)
+
+
+class TreeNode:
+    def __init__(self, key, value, left=None, right=None, parent=None):
+        self.key = key
+        self.payload = value
+        self.left_child = left
+        self.right_child = right
+        self.parent = parent
+
+    def has_left_child(self):
+        return self.left_child
+
+    def has_right_child(self):
+        return self.right_child
+
+    def is_left_child(self):
+        return self.parent and self.parent.left_child == self
+
+    def is_right_child(self):
+        return self.parent and self.parent.right_child == self
+
+    def is_root(self):
+        return not self.parent
+
+    def is_leaf(self):
+        return not (self.left_child or self.right_child)
+
+    def has_any_children(self):
+        return self.right_child or self.left_child
+
+    def has_both_children(self):
+        return self.right_child and self.left_child
+
     def find_successor(self):
         successor = None
 
@@ -332,7 +327,7 @@ class TreeNode:
         current_node = self
 
         while current_node.has_left_child():
-            current_node = current_node.left_child()
+            current_node = current_node.left_child
 
         return current_node
 
@@ -359,12 +354,23 @@ class TreeNode:
 
                 self.right_child.parent = self.parent
 
+    def replace_node_data(self, key, value, left_child, right_child):
+        self.key = key
+        self.payload = value
+        self.left_child = left_child
+        self.right_child = right_child
+        if self.has_right_child():
+            self.left_child.parent = self
+        if self.has_right_child():
+            self.right_child.parent = self
+
     def __iter__(self):
         if self:
             if self.has_left_child():
                 for node in self.left_child:
                     yield node
-                yield self.key
+
+            yield self.key
 
             if self.has_right_child():
                 for node in self.right_child:
